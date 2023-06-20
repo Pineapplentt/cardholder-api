@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres
+    container_name: postgres-cardholder-api
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: senha123
+    ports:
+      - "5433:5434"
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 9003:8080
