@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS CARD(
         cvv integer NOT NULL,
         due_date date NOT NULL,
         created_at timestamp NOT NULL,
-        PRIMARY KEY (id_card)
+        PRIMARY KEY (card_id)
 );
 
 CREATE TABLE IF NOT EXISTS BANK_ACCOUNT(
