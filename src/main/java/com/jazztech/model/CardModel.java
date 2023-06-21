@@ -3,6 +3,7 @@ package com.jazztech.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
+import lombok.Builder;
 
 public record CardModel(
         UUID cardHolderId,
@@ -12,4 +13,7 @@ public record CardModel(
         Integer cvv,
         LocalDate dueDate
 ) {
+    @Builder(toBuilder = true)
+    public CardModel {
+    }
 }

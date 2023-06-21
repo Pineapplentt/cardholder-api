@@ -6,8 +6,9 @@ import jakarta.persistence.Id;
 import java.util.UUID;
 
 @Entity
-public class BankAccountEntity {
+public class BankAccount {
     @Id
+    @Column(name = "bank_account_id")
     private UUID bankAccountId;
 
     @Column(name = "account_number")

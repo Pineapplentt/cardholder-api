@@ -1,10 +1,10 @@
 package com.jazztech.controller.request.cardholder;
 
-import com.jazztech.model.BankAccountModel;
+import com.jazztech.repository.entity.BankAccount;
 
 public record CardHolderRequest(
         String clientId,
         String creditAnalysisId,
-        BankAccountModel bankAccountModel
+        BankAccount bankAccountEntity
 ) {
 }

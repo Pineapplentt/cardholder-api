@@ -1,6 +1,6 @@
 package com.jazztech.controller.response.cardholder;
 
-import com.jazztech.controller.response.CardHolderStatus;
+import com.jazztech.utils.CardHolderStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;

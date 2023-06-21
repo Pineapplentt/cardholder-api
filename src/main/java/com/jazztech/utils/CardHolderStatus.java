@@ -1,4 +1,4 @@
-package com.jazztech.controller.response;
+package com.jazztech.utils;
 
 public enum CardHolderStatus {
     ACTIVE,
