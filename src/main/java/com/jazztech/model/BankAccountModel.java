@@ -10,6 +10,10 @@ public record BankAccountModel(
         String bankCode
 ) {
     @Builder(toBuilder = true)
-    public BankAccountModel {
+    public BankAccountModel(UUID bankAccountId, String account, String agency, String bankCode) {
+        this.bankAccountId = bankAccountId;
+        this.account = account;
+        this.agency = agency;
+        this.bankCode = bankCode;
     }
 }

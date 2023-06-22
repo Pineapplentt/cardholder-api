@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS CARD_HOLDER(
         card_holder_id uuid NOT NULL,
         credit_analysis_id uuid NOT NULL,
         bank_account_fk_id uuid NOT NULL,
-        card_holder_status integer NOT NULL,
+        card_holder_status varchar(8) NOT NULL,
         card_holder_limit decimal NOT NULL,
         created_at timestamp NOT NULL,
         PRIMARY KEY (card_holder_id),

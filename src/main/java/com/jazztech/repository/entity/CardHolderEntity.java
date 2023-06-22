@@ -1,11 +1,15 @@
 package com.jazztech.repository.entity;
 
 import com.jazztech.utils.CardHolderStatus;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
@@ -15,6 +19,7 @@ import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Immutable;
 
@@ -25,14 +30,15 @@ import org.hibernate.annotations.Immutable;
 @NoArgsConstructor
 public class CardHolderEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "card_holder_id")
     private UUID cardHolderId;
 
     @Column(name = "credit_analysis_id")
     private UUID creditAnalysisId;
 
-    @PrimaryKeyJoinColumn(name = "bank_account_fk_id")
-    @OneToOne
+    @JoinColumn(name = "bank_account_fk_id")
+    @OneToOne(cascade = CascadeType.ALL)
     private BankAccount bankAccount;
 
     @Enumerated(EnumType.STRING)

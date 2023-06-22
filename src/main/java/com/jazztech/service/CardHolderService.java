@@ -37,10 +37,10 @@ public class CardHolderService {
     public CardHolderModel cardHolderBuilder(CardHolderRequest cardHolderRequest) {
 //        try {
             final AnalysisSearch analysis = getAnalysis(UUID.fromString(cardHolderRequest.creditAnalysisId()));
-            final BankAccount bankAccount = cardHolderRequest.bankAccountEntity();
+            final BankAccount bankAccount = cardHolderRequest.bankAccount();
             return CardHolderModel.builder()
                     .cardHolderId(analysis.clientId())
-                    .creditAnalysisId(analysis.analysisId())
+                    .creditAnalysisId(analysis.idAnalysis())
                     .bankAccount(bankAccount)
                     .status(CardHolderStatus.ACTIVE)
                     .limit(analysis.approvedLimit())

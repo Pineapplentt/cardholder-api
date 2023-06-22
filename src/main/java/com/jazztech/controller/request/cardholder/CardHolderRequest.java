@@ -5,6 +5,6 @@ import com.jazztech.repository.entity.BankAccount;
 public record CardHolderRequest(
         String clientId,
         String creditAnalysisId,
-        BankAccount bankAccountEntity
+        BankAccount bankAccount
 ) {
 }

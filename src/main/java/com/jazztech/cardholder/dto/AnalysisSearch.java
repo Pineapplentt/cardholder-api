@@ -5,7 +5,7 @@ import java.util.UUID;
 import lombok.Builder;
 
 public record AnalysisSearch(
-        UUID analysisId,
+        UUID idAnalysis,
         UUID clientId,
         BigDecimal approvedLimit
 ) {
