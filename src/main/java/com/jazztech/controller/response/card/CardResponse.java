@@ -8,7 +8,6 @@ public record CardResponse(
         String cardNumber,
         Integer cvv,
         LocalDate dueDate,
-        BigDecimal limit,
         LocalDate createdAt
 ) {
 }

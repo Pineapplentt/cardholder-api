@@ -26,7 +26,7 @@ public class CardHolderController {
     }
 
     @GetMapping
-    public List<CardHolderEntity> getAllCardHolders() {
+    public List<CardHolderResponse> getAllCardHolders() {
         return this.cardHolderService.getAllCardHolders();
     }
 

@@ -58,8 +58,9 @@ public class CardHolderService {
         return creditAnalysisApi.getAllAnalysis(analysisId);
     }
 
-    public List<CardHolderEntity> getAllCardHolders() {
-        return cardHolderRepository.findAll();
+    public List<CardHolderResponse> getAllCardHolders() {
+        List<CardHolderEntity> cardHolderEntities = cardHolderRepository.findAll();
+        return cardHolderEntities.stream().map(cardHolderEntityToResponseMapper::from).toList();
     }
 
     public CardHolderResponse getCardHolderById(UUID id) {
