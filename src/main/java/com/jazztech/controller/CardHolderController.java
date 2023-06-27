@@ -29,13 +29,8 @@ public class CardHolderController {
     }
 
     @GetMapping
-<<<<<<< Updated upstream
-    public List<CardHolderEntity> getAllCardHolders() {
-        return this.cardHolderService.getAllCardHolders();
-=======
     public List<CardHolderResponse> getAllCardHolders(@RequestParam(required = false) String status) {
         return this.cardHolderService.getAllCardHolders(status);
->>>>>>> Stashed changes
     }
 
     @GetMapping

@@ -80,10 +80,6 @@ public class CardHolderService {
         return creditAnalysisApi.getAllAnalysis(analysisId);
     }
 
-<<<<<<< Updated upstream
-    public List<CardHolderEntity> getAllCardHolders() {
-        return cardHolderRepository.findAll();
-=======
     public List<CardHolderResponse> getAllCardHolders(String status) {
         try {
             if (Objects.isNull(status)) {
@@ -94,12 +90,7 @@ public class CardHolderService {
             return cardHolderEntities.stream().map(cardHolderEntityToResponseMapper::from).toList();
         } catch (IllegalArgumentException e) {
             throw new InvalidStatusException("Invalid status, please use ACTIVE or INACTIVE");
-        } catch (RetryableException e) {
-            throw new AnalysisApiConnectionException("Error connecting to analysis API, the service is unavailable or the request timed out");
-        } catch (FeignException.NotFound e) {
-            throw new AnalysisNotFoundException("Credit analysis not found, check the credit analysis id");
         }
->>>>>>> Stashed changes
     }
 
     public CardHolderResponse getCardHolderById(UUID id) {
