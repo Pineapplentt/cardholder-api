@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,6 @@ public class CardService {
     private final CardRepository cardRepository;
     private final CardModelToEntityMapper cardModelToEntityMapper;
     private final CardEntityToResponseMapper cardEntityToResponseMapper;
-    private final Random random = new Random();
     static final String CARD_NUMBER_VISA_PREFIX = "4";
     static final Integer CARD_NUMBER_LENGTH = 15;
 
@@ -40,12 +40,12 @@ public class CardService {
 
         // Generate random digits for the card number
         for (int i = 0; i < CARD_NUMBER_LENGTH; i++) {
-            final int digit = random.nextInt(10);
+            final int digit = ThreadLocalRandom.current().nextInt(0, 10);
             cardNumber.append(digit);
         }
 
         // Generate random digits for the CVV
-        final Integer cvv = random.nextInt(1000);
+        final Integer cvv = ThreadLocalRandom.current().nextInt(100, 1000);
 
         // Generate random digits for the due date
         final LocalDate dueDate = LocalDate.now().plusMonths(3).plusYears(5);
