@@ -42,9 +42,9 @@ public class CardController {
         return this.cardService.getCardById(id);
     }
 
-//    @PatchMapping("/{id}")
-//    public LimitUpdateResponse updateCardLimit(@PathVariable UUID cardHolderId, @PathVariable UUID id,
-//                                               @RequestBody LimitUpdateRequest limitUpdateRequest) {
-//        return this.cardService.updateCard();
-//    }
+    @PatchMapping("/{id}")
+    public LimitUpdateResponse updateCardLimit(@PathVariable UUID cardHolderId, @PathVariable UUID id,
+                                               @RequestBody LimitUpdateRequest limitUpdateRequest) {
+        return this.cardService.updateCard(id, limitUpdateRequest);
+    }
 }

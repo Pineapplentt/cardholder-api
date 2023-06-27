@@ -1,11 +1,11 @@
 package com.jazztech.service;
 
 import com.jazztech.controller.request.card.CardRequest;
-import com.jazztech.controller.response.card.CardListResponse;
+import com.jazztech.controller.request.card.LimitUpdateRequest;
 import com.jazztech.controller.response.card.CardResponse;
+import com.jazztech.controller.response.card.LimitUpdateResponse;
 import com.jazztech.mapper.card.CardEntityToResponseMapper;
 import com.jazztech.mapper.card.CardModelToEntityMapper;
-import com.jazztech.mapper.card.CardRequestToModelMapper;
 import com.jazztech.model.CardModel;
 import com.jazztech.repository.CardRepository;
 import com.jazztech.repository.entity.CardEntity;
@@ -20,39 +20,35 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CardService {
     private final CardRepository cardRepository;
-    private final CardRequestToModelMapper cardHolderRequestToModelMapper;
     private final CardModelToEntityMapper cardModelToEntityMapper;
     private final CardEntityToResponseMapper cardEntityToResponseMapper;
     private final Random random = new Random();
+    static final String CARD_NUMBER_VISA_PREFIX = "4";
+    static final Integer CARD_NUMBER_LENGTH = 15;
 
     public CardResponse createCard(CardRequest cardRequest) {
-        try {
-            final CardEntity cardEntity = cardModelToEntityMapper.from(cardBuilder(cardRequest));
-            final CardEntity savedCardEntity = saveCardEntity(cardEntity);
-            return cardEntityToResponseMapper.from(savedCardEntity);
-        } catch (Exception e) {
-            // TODO log exception
-            throw new RuntimeException(e);
-        }
+        final CardEntity cardEntity = cardModelToEntityMapper.from(cardBuilder(cardRequest));
+        final CardEntity savedCardEntity = saveCardEntity(cardEntity);
+        return cardEntityToResponseMapper.from(savedCardEntity);
     }
 
     public CardModel cardBuilder(CardRequest cardRequest) {
-        StringBuilder cardNumber = new StringBuilder();
+        final StringBuilder cardNumber = new StringBuilder();
 
         // IIN (Issuer Identification Number) for Visa
-        cardNumber.append("4");
+        cardNumber.append(CARD_NUMBER_VISA_PREFIX);
 
         // Generate random digits for the card number
-        for (int i = 0; i < 15; i++) {
-            int digit = random.nextInt(10);
+        for (int i = 0; i < CARD_NUMBER_LENGTH; i++) {
+            final int digit = random.nextInt(10);
             cardNumber.append(digit);
         }
 
         // Generate random digits for the CVV
-        Integer cvv = random.nextInt(1000);
+        final Integer cvv = random.nextInt(1000);
 
         // Generate random digits for the due date
-        LocalDate dueDate = LocalDate.now().plusMonths(3).plusYears(5);
+        final LocalDate dueDate = LocalDate.now().plusMonths(3).plusYears(5);
 
         return CardModel.builder()
                 .cardHolderId(UUID.fromString(cardRequest.cardHolderId()))
@@ -69,7 +65,7 @@ public class CardService {
     }
 
     public List<CardResponse> getAllCards(UUID cardHolderId) {
-        List<CardEntity> cardEntities = cardRepository.findByCardHolderId(cardHolderId);
+        final List<CardEntity> cardEntities = cardRepository.findByCardHolderId(cardHolderId);
         return cardEntities.stream().map(cardEntityToResponseMapper::from).toList();
     }
 
@@ -77,5 +73,9 @@ public class CardService {
         return cardRepository.findById(cardId)
                 .map(cardEntityToResponseMapper::from)
                 .orElseThrow(() -> new RuntimeException("Card not found"));
+    }
+
+    public LimitUpdateResponse updateCard(UUID id, LimitUpdateRequest limitUpdateRequest) {
+        return null;
     }
 }

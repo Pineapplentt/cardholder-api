@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -44,4 +45,15 @@ public class CardEntity {
     @Column(name = "created_at")
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @Builder(toBuilder = true)
+    public CardEntity(UUID cardId, UUID cardHolderId, BigDecimal limit, String cardNumber, Integer cvv, LocalDate dueDate, LocalDateTime createdAt) {
+        this.cardId = cardId;
+        this.cardHolderId = cardHolderId;
+        this.limit = limit;
+        this.cardNumber = cardNumber;
+        this.cvv = cvv;
+        this.dueDate = dueDate;
+        this.createdAt = createdAt;
+    }
 }
