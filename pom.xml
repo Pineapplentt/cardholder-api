@@ -148,11 +148,15 @@
                 <version>0.8.10</version>
                 <configuration>
                     <excludes>
-                        <exclude>**/AnalysisApplication**</exclude>
+                        <exclude>**/CardHolderApplication**</exclude>
                         <exclude>**/exception/**</exclude>
                         <exclude>**/mapper/**</exclude>
                         <exclude>**/controller/**</exclude>
                         <exclude>**/exceptionhandler/**</exclude>
+                        <exclude>**/repository/**</exclude>
+                        <exclude>**/dto/**</exclude>
+                        <exclude>**/utils/**</exclude>
+                        <exclude>**/model/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>

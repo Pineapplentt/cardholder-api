@@ -8,6 +8,7 @@ import lombok.Builder;
 
 public record CardHolderModel(
         UUID cardHolderId,
+        UUID clientId,
         UUID creditAnalysisId,
         BankAccount bankAccount,
         CardHolderStatus status,
