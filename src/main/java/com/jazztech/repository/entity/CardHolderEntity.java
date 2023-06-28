@@ -51,7 +51,7 @@ public class CardHolderEntity {
     @Column(name = "card_holder_limit")
     private BigDecimal limit;
 
-    @Column(name = "available_limit")
+    @Column(name = "card_holder_available_limit")
     private BigDecimal availableLimit;
 
     @Column(name = "created_at")
