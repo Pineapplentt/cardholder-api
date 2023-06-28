@@ -6,9 +6,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record CardHolderResponse(
-        UUID cardHolderId,
+        UUID id,
         CardHolderStatus status,
         BigDecimal limit,
+        BigDecimal availableLimit,
         LocalDateTime createdAt
 ) {
 }

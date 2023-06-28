@@ -31,7 +31,7 @@ public class CardHolderEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "card_holder_id")
-    private UUID cardHolderId;
+    private UUID id;
 
     @Column(name = "client_id")
     private UUID clientId;
@@ -51,19 +51,24 @@ public class CardHolderEntity {
     @Column(name = "card_holder_limit")
     private BigDecimal limit;
 
+    @Column(name = "available_limit")
+    private BigDecimal availableLimit;
+
     @Column(name = "created_at")
     @CreationTimestamp
     private LocalDateTime createdAt;
 
     @Builder(toBuilder = true)
     public CardHolderEntity(
-            UUID cardHolderId, UUID clientId, UUID creditAnalysisId, BankAccount bankAccount,
-            CardHolderStatus status, BigDecimal limit) {
-        this.cardHolderId = cardHolderId;
+            UUID id, UUID clientId, UUID creditAnalysisId, BankAccount bankAccount,
+            CardHolderStatus status, BigDecimal limit, BigDecimal availableLimit, LocalDateTime createdAt) {
+        this.id = id;
         this.clientId = clientId;
         this.creditAnalysisId = creditAnalysisId;
         this.bankAccount = bankAccount;
         this.status = status;
         this.limit = limit;
+        this.availableLimit = availableLimit;
+        this.createdAt = createdAt;
     }
 }

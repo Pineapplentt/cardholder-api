@@ -7,12 +7,13 @@ import java.util.UUID;
 import lombok.Builder;
 
 public record CardHolderModel(
-        UUID cardHolderId,
+        UUID id,
         UUID clientId,
         UUID creditAnalysisId,
         BankAccount bankAccount,
         CardHolderStatus status,
-        BigDecimal limit
+        BigDecimal limit,
+        BigDecimal availableLimit
 ) {
     @Builder(toBuilder = true)
     public CardHolderModel {
