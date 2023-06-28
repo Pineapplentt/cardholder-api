@@ -5,6 +5,8 @@ import com.jazztech.exception.AnalysisNotFoundException;
 import com.jazztech.exception.CardHolderAlreadyExistsException;
 import com.jazztech.exception.CardHolderNotFoundException;
 import com.jazztech.exception.CustomIllegalArgumentException;
+import com.jazztech.exception.InactiveCardHolderException;
+import com.jazztech.exception.InsufficientLimitException;
 import com.jazztech.exception.InvalidStatusException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
@@ -80,6 +82,28 @@ public class ExceptionResolver {
         final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
         problemDetail.setType(URI.create(UNPROCESSABLE_ENTITY));
         problemDetail.setTitle("Card holder already exists");
+        problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
+        problemDetail.setDetail(exception.getMessage());
+        problemDetail.setInstance(URI.create(request.getRequestURL().toString()));
+        return problemDetail;
+    }
+
+    @ExceptionHandler(InsufficientLimitException.class)
+    public ProblemDetail insufficientLimitExceptionHandler(InsufficientLimitException exception, HttpServletRequest request) {
+        final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        problemDetail.setType(URI.create(UNPROCESSABLE_ENTITY));
+        problemDetail.setTitle("Insufficient account limit");
+        problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
+        problemDetail.setDetail(exception.getMessage());
+        problemDetail.setInstance(URI.create(request.getRequestURL().toString()));
+        return problemDetail;
+    }
+
+    @ExceptionHandler(InactiveCardHolderException.class)
+    public ProblemDetail inactiveCardHolderExceptionHandler(InactiveCardHolderException exception, HttpServletRequest request) {
+        final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        problemDetail.setType(URI.create(UNPROCESSABLE_ENTITY));
+        problemDetail.setTitle("Inactive card holder");
         problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
         problemDetail.setDetail(exception.getMessage());
         problemDetail.setInstance(URI.create(request.getRequestURL().toString()));
