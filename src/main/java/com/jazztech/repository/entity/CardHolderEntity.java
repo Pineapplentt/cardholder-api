@@ -51,6 +51,9 @@ public class CardHolderEntity {
     @Column(name = "card_holder_limit")
     private BigDecimal limit;
 
+    @Column(name = "available_limit")
+    private BigDecimal availableLimit;
+
     @Column(name = "created_at")
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -58,12 +61,14 @@ public class CardHolderEntity {
     @Builder(toBuilder = true)
     public CardHolderEntity(
             UUID id, UUID clientId, UUID creditAnalysisId, BankAccount bankAccount,
-            CardHolderStatus status, BigDecimal limit) {
+            CardHolderStatus status, BigDecimal limit, BigDecimal availableLimit, LocalDateTime createdAt) {
         this.id = id;
         this.clientId = clientId;
         this.creditAnalysisId = creditAnalysisId;
         this.bankAccount = bankAccount;
         this.status = status;
         this.limit = limit;
+        this.availableLimit = availableLimit;
+        this.createdAt = createdAt;
     }
 }

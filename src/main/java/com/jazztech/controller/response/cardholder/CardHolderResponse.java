@@ -9,6 +9,7 @@ public record CardHolderResponse(
         UUID id,
         CardHolderStatus status,
         BigDecimal limit,
+        BigDecimal availableLimit,
         LocalDateTime createdAt
 ) {
 }

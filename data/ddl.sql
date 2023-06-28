@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS CARD_HOLDER(
         bank_account_fk_id uuid NOT NULL,
         card_holder_status varchar(8) NOT NULL,
         card_holder_limit decimal NOT NULL,
+        card_holder_available_limit decimal NOT NULL,
         created_at timestamp NOT NULL,
         PRIMARY KEY (card_holder_id),
         FOREIGN KEY (bank_account_fk_id) REFERENCES BANK_ACCOUNT (bank_account_id)
