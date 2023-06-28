@@ -62,6 +62,7 @@ public class CardHolderService {
                     .bankAccount(bankAccount)
                     .status(CardHolderStatus.ACTIVE)
                     .limit(analysis.approvedLimit())
+                    .availableLimit(analysis.approvedLimit())
                     .build();
         } catch (FeignException.NotFound exception) {
             throw new AnalysisNotFoundException("Credit analysis and/or client not found, check if both of ids correspond to the same client");
