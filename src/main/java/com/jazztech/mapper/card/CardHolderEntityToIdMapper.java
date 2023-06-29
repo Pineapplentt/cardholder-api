@@ -2,12 +2,11 @@ package com.jazztech.mapper.card;
 
 import com.jazztech.model.CardModel;
 import com.jazztech.repository.entity.CardEntity;
-import com.jazztech.repository.entity.CardHolderEntity;
-import java.util.UUID;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper
-public interface CardModelToEntityMapper {
+public interface CardHolderEntityToIdMapper {
+    @Mapping(target = "cardHolderId.id", source = "cardHolderId")
     CardEntity from(CardModel cardModel);
-    CardHolderEntity map(UUID cardHolderId);
 }

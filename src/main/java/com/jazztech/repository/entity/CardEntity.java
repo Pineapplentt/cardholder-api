@@ -1,10 +1,13 @@
 package com.jazztech.repository.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -28,8 +31,9 @@ public class CardEntity {
     @Column(name = "card_id")
     private UUID cardId;
 
-    @Column(name = "card_holder_id")
-    private UUID cardHolderId;
+    @JoinColumn(name = "card_holder_id")
+    @ManyToOne(cascade = CascadeType.ALL)
+    private CardHolderEntity cardHolderId;
     @Column(name = "card_limit")
     private BigDecimal limit;
 
@@ -47,7 +51,8 @@ public class CardEntity {
     private LocalDateTime createdAt;
 
     @Builder(toBuilder = true)
-    public CardEntity(UUID cardId, UUID cardHolderId, BigDecimal limit, String cardNumber, Integer cvv, LocalDate dueDate, LocalDateTime createdAt) {
+    public CardEntity(UUID cardId, CardHolderEntity cardHolderId, BigDecimal limit, String cardNumber, Integer cvv, LocalDate dueDate,
+                      LocalDateTime createdAt) {
         this.cardId = cardId;
         this.cardHolderId = cardHolderId;
         this.limit = limit;

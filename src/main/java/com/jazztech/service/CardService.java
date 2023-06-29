@@ -13,6 +13,7 @@ import com.jazztech.repository.entity.CardHolderEntity;
 import com.jazztech.utils.CardHolderStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,8 @@ public class CardService {
     public CardResponse createCard(UUID cardHolderId, CardRequest cardRequest) {
         final CardHolderEntity cardHolder = cardHolderService.getCardHolderEntityById(cardHolderId);
         final CardEntity cardEntity = cardModelToEntityMapper.from(cardBuilder(cardHolder, cardRequest));
-        final CardEntity savedCardEntity = saveCardEntity(cardEntity);
+
+        final CardEntity savedCardEntity = saveCardEntity(cardEntity.toBuilder().cardHolderId(cardHolder).build());
         return cardEntityToResponseMapper.from(savedCardEntity);
     }
 
@@ -61,10 +63,9 @@ public class CardService {
         // Generate random digits for the due date
         final LocalDate dueDate = LocalDate.now().plusMonths(3).plusYears(5);
 
-
         return CardModel.builder()
-                .cardHolder(cardHolder)
                 .cardId(UUID.randomUUID())
+                .cardHolderId(cardHolder.getId())
                 .cardNumber(cardNumber.toString())
                 .limit(cardRequest.limit())
                 .cvv(cvv)
@@ -74,5 +75,9 @@ public class CardService {
 
     public CardEntity saveCardEntity(CardEntity cardEntity) {
         return cardRepository.save(cardEntity);
+    }
+
+    public List<CardResponse> getAllCards(UUID cardHolderId) {
+        return this.cardRepository.findByCardHolderId(cardHolderId).stream().map(cardEntityToResponseMapper::from).toList();
     }
 }
