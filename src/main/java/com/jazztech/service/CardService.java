@@ -7,6 +7,7 @@ import com.jazztech.exception.InsufficientLimitException;
 import com.jazztech.mapper.card.CardEntityToResponseMapper;
 import com.jazztech.mapper.card.CardModelToEntityMapper;
 import com.jazztech.model.CardModel;
+import com.jazztech.repository.CardHolderRepository;
 import com.jazztech.repository.CardRepository;
 import com.jazztech.repository.entity.CardEntity;
 import com.jazztech.repository.entity.CardHolderEntity;
@@ -28,6 +29,7 @@ public class CardService {
     private final CardHolderService cardHolderService;
     private final CardModelToEntityMapper cardModelToEntityMapper;
     private final CardEntityToResponseMapper cardEntityToResponseMapper;
+    private final CardHolderRepository cardHolderRepository;
 
     public CardResponse createCard(UUID cardHolderId, CardRequest cardRequest) {
         final CardHolderEntity cardHolder = cardHolderService.getCardHolderEntityById(cardHolderId);
@@ -38,9 +40,10 @@ public class CardService {
     }
 
     public CardModel cardBuilder(CardHolderEntity cardHolder, CardRequest cardRequest) {
-        if (cardHolder.getLimit().compareTo(BigDecimal.ZERO) <= 0) {
+        if (cardHolder.getAvailableLimit().compareTo(BigDecimal.ZERO) <= 0 || cardHolder.getAvailableLimit().compareTo(cardRequest.limit()) < 0) {
             throw new InsufficientLimitException(
-                    "Card holder has insufficient limit, in order to create a credit card, the card holder must have a limit greater than zero");
+                    "Card holder has insufficient limit, in order to create a credit card, the card holder must have a limit greater than zero"
+                            + " and greater than the requested limit");
         }
         if (cardHolder.getStatus().equals(CardHolderStatus.INACTIVE)) {
             throw new InactiveCardHolderException("Card holder is inactive, in order to create a credit card, the card holder must be active");
@@ -62,6 +65,12 @@ public class CardService {
 
         // Generate random digits for the due date
         final LocalDate dueDate = LocalDate.now().plusMonths(3).plusYears(5);
+
+        CardHolderEntity cardHolderEntity = cardHolderService.getCardHolderEntityById(cardHolder.getId());
+        cardHolderEntity = cardHolderEntity.toBuilder()
+                .availableLimit(cardHolderEntity.getAvailableLimit().subtract(cardRequest.limit()))
+                .build();
+        cardHolderRepository.save(cardHolderEntity);
 
         return CardModel.builder()
                 .cardId(UUID.randomUUID())

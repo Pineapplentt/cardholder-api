@@ -17,10 +17,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Immutable;
 
 @Entity
-@Immutable
 @Table(name = "CARD")
 @Getter
 @NoArgsConstructor

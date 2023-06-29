@@ -9,5 +9,6 @@ import org.mapstruct.Mapper;
 @Mapper
 public interface CardModelToEntityMapper {
     CardEntity from(CardModel cardModel);
+
     CardHolderEntity map(UUID cardHolderId);
 }
