@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CardRepository extends JpaRepository<CardEntity, UUID> {
 
-    CardEntity findByCardHolderIdAndCardId(UUID cardHolderId, UUID cardId);
+    CardEntity findByCardHolderIdAndCardId(CardHolderEntity cardHolderEntity, UUID cardId);
 
     List<CardEntity> findByCardHolderId(CardHolderEntity cardHolderEntity);
 }
