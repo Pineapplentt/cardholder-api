@@ -94,6 +94,7 @@ public class CardHolderService {
         }
     }
 
+
     public CardHolderResponse getCardHolderById(UUID id) {
         return cardHolderEntityToResponseMapper.from(cardHolderRepository.findById(id)
                 .orElseThrow(() -> new CardHolderNotFoundException("Card holder not found, check the card holder id and try again")));
