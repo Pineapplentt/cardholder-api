@@ -38,4 +38,5 @@ public class CardHolderController {
     public CardHolderResponse getCardHolderById(@PathVariable UUID id) {
         return this.cardHolderService.getCardHolderById(id);
     }
+
 }
