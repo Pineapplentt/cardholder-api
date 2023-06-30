@@ -1,13 +1,16 @@
 package com.jazztech.controller;
 
 import com.jazztech.controller.request.card.CardRequest;
+import com.jazztech.controller.request.card.LimitUpdateRequest;
 import com.jazztech.controller.response.card.CardResponse;
+import com.jazztech.controller.response.card.LimitUpdateResponse;
 import com.jazztech.service.CardService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,5 +40,12 @@ public class CardController {
     public CardResponse getCardById(@PathVariable UUID cardHolderId,
                                     @PathVariable UUID id) {
         return this.cardService.getCardById(cardHolderId, id);
+    }
+
+    @PatchMapping("/{cardId}")
+    public LimitUpdateResponse updateCardLimit(@PathVariable UUID cardHolderId,
+                                               @PathVariable UUID cardId,
+                                               @RequestBody LimitUpdateRequest limitUpdateRequest) {
+        return this.cardService.updateCard(cardHolderId, cardId, limitUpdateRequest);
     }
 }

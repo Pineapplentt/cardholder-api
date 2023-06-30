@@ -1,10 +1,13 @@
 package com.jazztech.service;
 
 import com.jazztech.controller.request.card.CardRequest;
+import com.jazztech.controller.request.card.LimitUpdateRequest;
 import com.jazztech.controller.response.card.CardResponse;
+import com.jazztech.controller.response.card.LimitUpdateResponse;
 import com.jazztech.exception.CardNotFoundException;
 import com.jazztech.exception.InactiveCardHolderException;
 import com.jazztech.exception.InsufficientLimitException;
+import com.jazztech.mapper.card.CardEntityToLimitUpdateResponseMapper;
 import com.jazztech.mapper.card.CardEntityToResponseMapper;
 import com.jazztech.mapper.card.CardHolderEntityToIdMapper;
 import com.jazztech.mapper.card.CardModelToEntityMapper;
@@ -34,6 +37,7 @@ public class CardService {
     private final CardEntityToResponseMapper cardEntityToResponseMapper;
     private final CardHolderRepository cardHolderRepository;
     private final CardHolderEntityToIdMapper cardHolderEntityToIdMapper;
+    private final CardEntityToLimitUpdateResponseMapper cardEntityToLimitUpdateResponseMapper;
 
     public CardResponse createCard(UUID cardHolderId, CardRequest cardRequest) {
         final CardHolderEntity cardHolder = cardHolderService.getCardHolderEntityById(cardHolderId);
@@ -103,5 +107,38 @@ public class CardService {
                 .orElseThrow(() -> new CardNotFoundException(
                         "Card with id " + cardId + " not found, check the card holder id and card id then try again")
                 );
+    }
+
+    public LimitUpdateResponse updateCard(UUID cardHolderId, UUID cardId, LimitUpdateRequest limitUpdateRequest) {
+        CardHolderEntity cardHolderEntity = cardHolderService.getCardHolderEntityById(cardHolderId);
+        final CardEntity cardEntity = cardRepository.findByCardHolderIdAndCardId(cardHolderEntity, cardId);
+
+        final BigDecimal limitDifference = cardHolderEntity.getAvailableLimit().subtract(limitUpdateRequest.limit());
+        final BigDecimal cardLimitAfterCalculation = cardEntity.getLimit();
+
+        if (limitDifference.compareTo(BigDecimal.ZERO) < 0) {
+            throw new InsufficientLimitException(
+                    "Card holder has insufficient limit, in order to update a credit card, the card holder must have a limit greater than zero"
+                            + " and greater than the requested limit");
+        }
+
+        if (limitUpdateRequest.limit().compareTo(cardEntity.getLimit()) < 0) {
+            cardHolderEntity = cardHolderEntity.toBuilder()
+                    .availableLimit(cardHolderEntity.getAvailableLimit().add(cardLimitAfterCalculation))
+                    .build();
+            cardHolderRepository.save(cardHolderEntity);
+            return Optional.of(cardRepository.save(cardEntity.toBuilder().limit(limitUpdateRequest.limit()).build()))
+                    .map(cardEntityToLimitUpdateResponseMapper::from).orElseThrow(() -> new CardNotFoundException(
+                            "Card with id " + cardId + " not found, check the card holder id and card id then try again"));
+        }
+
+        cardHolderEntity = cardHolderEntity.toBuilder()
+                .availableLimit(cardHolderEntity.getAvailableLimit().subtract(limitUpdateRequest.limit()))
+                .build();
+        cardHolderRepository.save(cardHolderEntity);
+
+        return Optional.of(cardRepository.save(cardEntity.toBuilder().limit(limitUpdateRequest.limit()).build()))
+                .map(cardEntityToLimitUpdateResponseMapper::from).orElseThrow(() -> new CardNotFoundException(
+                        "Card with id " + cardId + " not found, check the card holder id and card id then try again"));
     }
 }
