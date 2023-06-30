@@ -27,4 +27,9 @@ public class CardHolderController {
     public CardHolderResponse createCardHolder(@RequestBody CardHolderRequest cardHolderRequest) {
         return this.cardHolderService.createCardHolder(cardHolderRequest);
     }
+
+    @GetMapping
+    public List<CardHolderResponse> getAllCardHolders(@RequestParam(required = false) String status) {
+        return this.cardHolderService.getAllCardHolders(status);
+    }
 }

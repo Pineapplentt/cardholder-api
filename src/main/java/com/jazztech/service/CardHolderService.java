@@ -80,4 +80,17 @@ public class CardHolderService {
     public AnalysisSearch getAnalysis(UUID analysisId) {
         return creditAnalysisApi.getAllAnalysis(analysisId);
     }
+
+    public List<CardHolderResponse> getAllCardHolders(String status) {
+        try {
+            if (Objects.isNull(status)) {
+                final List<CardHolderEntity> cardHolderEntities = cardHolderRepository.findAll();
+                return cardHolderEntities.stream().map(cardHolderEntityToResponseMapper::from).toList();
+            }
+            final List<CardHolderEntity> cardHolderEntities = cardHolderRepository.findByStatus(CardHolderStatus.valueOf(status.toUpperCase()));
+            return cardHolderEntities.stream().map(cardHolderEntityToResponseMapper::from).toList();
+        } catch (IllegalArgumentException e) {
+            throw new InvalidStatusException("Invalid status, please use ACTIVE or INACTIVE");
+        }
+    }
 }
