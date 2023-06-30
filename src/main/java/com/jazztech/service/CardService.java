@@ -85,8 +85,4 @@ public class CardService {
     public CardEntity saveCardEntity(CardEntity cardEntity) {
         return cardRepository.save(cardEntity);
     }
-
-    public List<CardResponse> getAllCards(UUID cardHolderId) {
-        return this.cardRepository.findByCardHolderId(cardHolderId).stream().map(cardEntityToResponseMapper::from).toList();
-    }
 }

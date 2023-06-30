@@ -27,9 +27,4 @@ public class CardController {
                                    @RequestBody CardRequest cardRequest) {
         return this.cardService.createCard(cardHolderId, cardRequest);
     }
-
-    @GetMapping
-    public List<CardResponse> getAllCards(@PathVariable UUID cardHolderId) {
-        return this.cardService.getAllCards(cardHolderId);
-    }
 }
