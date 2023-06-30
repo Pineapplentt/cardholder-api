@@ -32,4 +32,11 @@ public class CardHolderController {
     public List<CardHolderResponse> getAllCardHolders(@RequestParam(required = false) String status) {
         return this.cardHolderService.getAllCardHolders(status);
     }
+
+    @GetMapping
+    @RequestMapping("/{id}")
+    public CardHolderResponse getCardHolderById(@PathVariable UUID id) {
+        return this.cardHolderService.getCardHolderById(id);
+    }
+
 }

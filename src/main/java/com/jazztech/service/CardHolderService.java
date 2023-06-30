@@ -93,4 +93,15 @@ public class CardHolderService {
             throw new InvalidStatusException("Invalid status, please use ACTIVE or INACTIVE");
         }
     }
+
+
+    public CardHolderResponse getCardHolderById(UUID id) {
+        return cardHolderEntityToResponseMapper.from(cardHolderRepository.findById(id)
+                .orElseThrow(() -> new CardHolderNotFoundException("Card holder not found, check the card holder id and try again")));
+    }
+
+    public CardHolderEntity getCardHolderEntityById(UUID id) {
+        return cardHolderRepository.findById(id)
+                .orElseThrow(() -> new CardHolderNotFoundException("Card holder not found, check the card holder id and try again"));
+    }
 }
