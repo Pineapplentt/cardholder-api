@@ -5,6 +5,7 @@ import com.jazztech.controller.response.card.CardResponse;
 import com.jazztech.exception.InactiveCardHolderException;
 import com.jazztech.exception.InsufficientLimitException;
 import com.jazztech.mapper.card.CardEntityToResponseMapper;
+import com.jazztech.mapper.card.CardHolderEntityToIdMapper;
 import com.jazztech.mapper.card.CardModelToEntityMapper;
 import com.jazztech.model.CardModel;
 import com.jazztech.repository.CardHolderRepository;
@@ -30,6 +31,7 @@ public class CardService {
     private final CardModelToEntityMapper cardModelToEntityMapper;
     private final CardEntityToResponseMapper cardEntityToResponseMapper;
     private final CardHolderRepository cardHolderRepository;
+    private final CardHolderEntityToIdMapper cardHolderEntityToIdMapper;
 
     public CardResponse createCard(UUID cardHolderId, CardRequest cardRequest) {
         final CardHolderEntity cardHolder = cardHolderService.getCardHolderEntityById(cardHolderId);
@@ -84,5 +86,11 @@ public class CardService {
 
     public CardEntity saveCardEntity(CardEntity cardEntity) {
         return cardRepository.save(cardEntity);
+    }
+
+    public List<CardResponse> getAllCards(UUID cardHolderId) {
+        final CardHolderEntity cardHolderEntity = cardHolderService.getCardHolderEntityById(cardHolderId);
+        final List<CardEntity> cardEntities = cardRepository.findByCardHolderId(cardHolderEntity);
+        return cardEntities.stream().map(cardEntityToResponseMapper::from).toList();
     }
 }
