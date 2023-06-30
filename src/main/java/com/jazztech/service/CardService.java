@@ -38,6 +38,7 @@ public class CardService {
     private final CardHolderRepository cardHolderRepository;
     private final CardHolderEntityToIdMapper cardHolderEntityToIdMapper;
     private final CardEntityToLimitUpdateResponseMapper cardEntityToLimitUpdateResponseMapper;
+    static final String CARD_NOT_FOUND_MESSAGE = "Card not found, check the card holder id and card id then try again";
 
     public CardResponse createCard(UUID cardHolderId, CardRequest cardRequest) {
         final CardHolderEntity cardHolder = cardHolderService.getCardHolderEntityById(cardHolderId);
@@ -104,9 +105,7 @@ public class CardService {
         final CardHolderEntity cardHolderEntity = cardHolderService.getCardHolderEntityById(cardHolderId);
         return Optional.ofNullable(cardRepository.findByCardHolderIdAndCardId(cardHolderEntity, cardId))
                 .map(cardEntityToResponseMapper::from)
-                .orElseThrow(() -> new CardNotFoundException(
-                        "Card with id " + cardId + " not found, check the card holder id and card id then try again")
-                );
+                .orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND_MESSAGE));
     }
 
     public LimitUpdateResponse updateCard(UUID cardHolderId, UUID cardId, LimitUpdateRequest limitUpdateRequest) {
@@ -128,8 +127,7 @@ public class CardService {
                     .build();
             cardHolderRepository.save(cardHolderEntity);
             return Optional.of(cardRepository.save(cardEntity.toBuilder().limit(limitUpdateRequest.limit()).build()))
-                    .map(cardEntityToLimitUpdateResponseMapper::from).orElseThrow(() -> new CardNotFoundException(
-                            "Card with id " + cardId + " not found, check the card holder id and card id then try again"));
+                    .map(cardEntityToLimitUpdateResponseMapper::from).orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND_MESSAGE));
         }
 
         cardHolderEntity = cardHolderEntity.toBuilder()
@@ -138,7 +136,6 @@ public class CardService {
         cardHolderRepository.save(cardHolderEntity);
 
         return Optional.of(cardRepository.save(cardEntity.toBuilder().limit(limitUpdateRequest.limit()).build()))
-                .map(cardEntityToLimitUpdateResponseMapper::from).orElseThrow(() -> new CardNotFoundException(
-                        "Card with id " + cardId + " not found, check the card holder id and card id then try again"));
+                .map(cardEntityToLimitUpdateResponseMapper::from).orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND_MESSAGE));
     }
 }
