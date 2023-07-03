@@ -1,6 +1,9 @@
 # Intellij idea cache
 *.idea
 
+# Target directory
+target/
+
 # Compiled class file
 *.class
 
