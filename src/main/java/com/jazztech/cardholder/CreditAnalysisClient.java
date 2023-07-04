@@ -9,5 +9,5 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient(name = "creditAnalysisApi", url = "http://localhost:9001/credit/analysis")
 public interface CreditAnalysisClient {
     @GetMapping(path = "/{id}")
-    AnalysisSearch getAllAnalysis(@PathVariable UUID id);
+    AnalysisSearch getAnalysisById(@PathVariable UUID id);
 }

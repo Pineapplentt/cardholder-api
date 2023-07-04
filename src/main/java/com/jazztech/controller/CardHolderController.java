@@ -3,6 +3,7 @@ package com.jazztech.controller;
 import com.jazztech.controller.request.cardholder.CardHolderRequest;
 import com.jazztech.controller.response.cardholder.CardHolderResponse;
 import com.jazztech.service.CardHolderService;
+import com.jazztech.utils.CardHolderStatus;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/v1.0/card-holder")
+@RequestMapping("/v1.0/card-holders")
 @RequiredArgsConstructor
 public class CardHolderController {
     private final CardHolderService cardHolderService;
@@ -29,7 +30,7 @@ public class CardHolderController {
     }
 
     @GetMapping
-    public List<CardHolderResponse> getAllCardHolders(@RequestParam(required = false) String status) {
+    public List<CardHolderResponse> getAllCardHolders(@RequestParam(required = false) CardHolderStatus status) {
         return this.cardHolderService.getAllCardHolders(status);
     }
 

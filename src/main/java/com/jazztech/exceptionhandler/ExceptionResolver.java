@@ -4,24 +4,27 @@ import com.jazztech.exception.AnalysisApiConnectionException;
 import com.jazztech.exception.AnalysisNotFoundException;
 import com.jazztech.exception.CardHolderAlreadyExistsException;
 import com.jazztech.exception.CardHolderNotFoundException;
-import com.jazztech.exception.CardNotFoundException;
 import com.jazztech.exception.CustomIllegalArgumentException;
 import com.jazztech.exception.InactiveCardHolderException;
 import com.jazztech.exception.InsufficientLimitException;
 import com.jazztech.exception.InvalidStatusException;
+import com.jazztech.utils.CardHolderStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @ControllerAdvice
 public class ExceptionResolver {
 
-    static final String TIMESTAMP = "timestamp";
-    static final String UNPROCESSABLE_ENTITY = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/422";
+    private static final String TIMESTAMP = "timestamp";
+    private static final String UNPROCESSABLE_ENTITY = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/422";
 
     @ExceptionHandler(InvalidStatusException.class)
     public ProblemDetail invalidStatusExceptionHandler(InvalidStatusException exception, HttpServletRequest request) {
@@ -111,13 +114,21 @@ public class ExceptionResolver {
         return problemDetail;
     }
 
-    @ExceptionHandler(CardNotFoundException.class)
-    public ProblemDetail cardNotFoundExceptionHandler(CardNotFoundException exception, HttpServletRequest request) {
-        final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
-        problemDetail.setType(URI.create("https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"));
-        problemDetail.setTitle("Card not found");
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ProblemDetail methodArgumentTypeMismatchExceptionHandler(MethodArgumentTypeMismatchException exception, HttpServletRequest request) {
+        final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        problemDetail.setType(URI.create("https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/422"));
+        problemDetail.setTitle("Invalid parameter type");
         problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
-        problemDetail.setDetail(exception.getMessage());
+
+        final List<CardHolderStatus> acceptedValues = Arrays.stream(CardHolderStatus.values()).toList();
+        final String paramName = exception.getParameter().getParameterName();
+        final String invalidValue = exception.getValue().toString();
+        final String errorMessage = "Invalid parameter value for " + paramName
+                + ". Expected type: " + acceptedValues
+                + ". Invalid value: " + invalidValue;
+
+        problemDetail.setDetail(errorMessage);
         problemDetail.setInstance(URI.create(request.getRequestURL().toString()));
         return problemDetail;
     }
