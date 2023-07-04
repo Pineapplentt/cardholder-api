@@ -15,7 +15,6 @@ import com.jazztech.repository.entity.CardHolderEntity;
 import com.jazztech.utils.CardHolderStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
@@ -24,17 +23,16 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CardService {
-    static final String CARD_NUMBER_VISA_PREFIX = "4";
-    static final Integer CARD_NUMBER_LENGTH = 15;
+    private static final String CARD_NUMBER_VISA_PREFIX = "4";
+    private static final Integer CARD_NUMBER_LENGTH = 15;
     private final CardRepository cardRepository;
-    private final CardHolderService cardHolderService;
     private final CardModelToEntityMapper cardModelToEntityMapper;
     private final CardEntityToResponseMapper cardEntityToResponseMapper;
     private final CardHolderRepository cardHolderRepository;
     private final CardHolderEntityToIdMapper cardHolderEntityToIdMapper;
 
     public CardResponse createCard(UUID cardHolderId, CardRequest cardRequest) {
-        final CardHolderEntity cardHolder = cardHolderService.getCardHolderEntityById(cardHolderId);
+        final CardHolderEntity cardHolder = cardHolderRepository.findById(cardHolderId).get();
         final CardEntity cardEntity = cardModelToEntityMapper.from(cardBuilder(cardHolder, cardRequest));
 
         final CardEntity savedCardEntity = saveCardEntity(cardEntity.toBuilder().cardHolderId(cardHolder).build());
@@ -68,7 +66,7 @@ public class CardService {
         // Generate random digits for the due date
         final LocalDate dueDate = LocalDate.now().plusMonths(3).plusYears(5);
 
-        CardHolderEntity cardHolderEntity = cardHolderService.getCardHolderEntityById(cardHolder.getId());
+        CardHolderEntity cardHolderEntity = cardHolderRepository.findById(cardHolder.getId()).get();
         cardHolderEntity = cardHolderEntity.toBuilder()
                 .availableLimit(cardHolderEntity.getAvailableLimit().subtract(cardRequest.limit()))
                 .build();
