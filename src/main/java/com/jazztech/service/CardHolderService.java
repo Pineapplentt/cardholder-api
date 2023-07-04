@@ -9,11 +9,8 @@ import com.jazztech.exception.AnalysisNotFoundException;
 import com.jazztech.exception.CardHolderAlreadyExistsException;
 import com.jazztech.exception.CardHolderNotFoundException;
 import com.jazztech.exception.CustomIllegalArgumentException;
-import com.jazztech.exception.InvalidStatusException;
-import com.jazztech.mapper.bankaccount.BankAccountModelToEntityMapper;
 import com.jazztech.mapper.cardholder.CardHolderEntityToResponseMapper;
 import com.jazztech.mapper.cardholder.CardHolderModelToEntityMapper;
-import com.jazztech.mapper.cardholder.CardHolderRequestToModelMapper;
 import com.jazztech.model.CardHolderModel;
 import com.jazztech.repository.CardHolderRepository;
 import com.jazztech.repository.entity.BankAccount;
@@ -23,6 +20,7 @@ import feign.FeignException;
 import feign.RetryableException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,10 +30,8 @@ import org.springframework.stereotype.Service;
 public class CardHolderService {
     private final CreditAnalysisClient creditAnalysisApi;
     private final CardHolderRepository cardHolderRepository;
-    private final CardHolderRequestToModelMapper cardHolderRequestToModelMapper;
     private final CardHolderModelToEntityMapper cardHolderModelToEntityMapper;
     private final CardHolderEntityToResponseMapper cardHolderEntityToResponseMapper;
-    private final BankAccountModelToEntityMapper bankAccountModelToEntityMapper;
 
     public CardHolderResponse createCardHolder(CardHolderRequest cardHolderRequest) {
         final CardHolderEntity cardHolderEntity = cardHolderModelToEntityMapper.from(cardHolderBuilder(cardHolderRequest));
@@ -45,19 +41,17 @@ public class CardHolderService {
 
     public CardHolderModel cardHolderBuilder(CardHolderRequest cardHolderRequest) {
 
-        final List<CardHolderEntity> cardHolderEntities = cardHolderRepository.findAll();
-        if (cardHolderEntities.stream()
-                .anyMatch(cardHolderEntity -> cardHolderEntity.getClientId()
-                        .equals(UUID.fromString(cardHolderRequest.clientId())))) {
+        if (cardHolderRepository.findById(cardHolderRequest.clientId()).isPresent()) {
             throw new CardHolderAlreadyExistsException("Card Holder already registered, check the data sent for registration and try again");
+
         }
 
         try {
-            final AnalysisSearch analysis = getAnalysis(UUID.fromString(cardHolderRequest.creditAnalysisId()));
+            final AnalysisSearch analysis = getAnalysis(cardHolderRequest.creditAnalysisId());
             final BankAccount bankAccount = cardHolderRequest.bankAccount();
             return CardHolderModel.builder()
                     .id(analysis.clientId())
-                    .clientId(UUID.fromString(cardHolderRequest.clientId()))
+                    .clientId(cardHolderRequest.clientId())
                     .creditAnalysisId(analysis.idAnalysis())
                     .bankAccount(bankAccount)
                     .status(CardHolderStatus.ACTIVE)
@@ -65,9 +59,9 @@ public class CardHolderService {
                     .availableLimit(analysis.approvedLimit())
                     .build();
         } catch (FeignException.NotFound exception) {
-            throw new AnalysisNotFoundException("Credit analysis and/or client not found, check if both of ids correspond to the same client");
+            throw new AnalysisNotFoundException("Credit analysis not found, check if the ID is correct and try again");
         } catch (RetryableException exception) {
-            throw new AnalysisApiConnectionException("Error connecting to analysis API, the service is unavailable or the request timed out");
+            throw new AnalysisApiConnectionException("Error connecting to analysis API, the service is unavailable");
         } catch (IllegalArgumentException exception) {
             throw new CustomIllegalArgumentException("Invalid UUID format, please use the following format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
         }
@@ -78,30 +72,22 @@ public class CardHolderService {
     }
 
     public AnalysisSearch getAnalysis(UUID analysisId) {
-        return creditAnalysisApi.getAllAnalysis(analysisId);
+        return creditAnalysisApi.getAnalysisById(analysisId);
     }
 
-    public List<CardHolderResponse> getAllCardHolders(String status) {
-        try {
-            if (Objects.isNull(status)) {
-                final List<CardHolderEntity> cardHolderEntities = cardHolderRepository.findAll();
-                return cardHolderEntities.stream().map(cardHolderEntityToResponseMapper::from).toList();
-            }
-            final List<CardHolderEntity> cardHolderEntities = cardHolderRepository.findByStatus(CardHolderStatus.valueOf(status.toUpperCase()));
+    public List<CardHolderResponse> getAllCardHolders(CardHolderStatus status) {
+        if (Objects.isNull(status)) {
+            final List<CardHolderEntity> cardHolderEntities = cardHolderRepository.findAll();
             return cardHolderEntities.stream().map(cardHolderEntityToResponseMapper::from).toList();
-        } catch (IllegalArgumentException e) {
-            throw new InvalidStatusException("Invalid status, please use ACTIVE or INACTIVE");
         }
+        final List<CardHolderEntity> cardHolderEntities = cardHolderRepository.findByStatus(status);
+        return cardHolderEntities.stream().map(cardHolderEntityToResponseMapper::from).toList();
     }
 
 
     public CardHolderResponse getCardHolderById(UUID id) {
-        return cardHolderEntityToResponseMapper.from(cardHolderRepository.findById(id)
+        final Optional<CardHolderEntity> cardHolderEntity = cardHolderRepository.findById(id);
+        return cardHolderEntityToResponseMapper.from(cardHolderEntity
                 .orElseThrow(() -> new CardHolderNotFoundException("Card holder not found, check the card holder id and try again")));
-    }
-
-    public CardHolderEntity getCardHolderEntityById(UUID id) {
-        return cardHolderRepository.findById(id)
-                .orElseThrow(() -> new CardHolderNotFoundException("Card holder not found, check the card holder id and try again"));
     }
 }
