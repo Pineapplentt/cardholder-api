@@ -2,6 +2,7 @@ package com.jazztech.service;
 
 import com.jazztech.controller.request.card.CardRequest;
 import com.jazztech.controller.response.card.CardResponse;
+import com.jazztech.exception.CardNotFoundException;
 import com.jazztech.exception.InactiveCardHolderException;
 import com.jazztech.exception.InsufficientLimitException;
 import com.jazztech.mapper.card.CardEntityToResponseMapper;
@@ -15,6 +16,7 @@ import com.jazztech.repository.entity.CardHolderEntity;
 import com.jazztech.utils.CardHolderStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
@@ -90,5 +92,12 @@ public class CardService {
         final CardHolderEntity cardHolderEntity = cardHolderService.getCardHolderEntityById(cardHolderId);
         final List<CardEntity> cardEntities = cardRepository.findByCardHolderId(cardHolderEntity);
         return cardEntities.stream().map(cardEntityToResponseMapper::from).toList();
+    }
+
+    public CardResponse getCardById(UUID cardHolderId, UUID cardId) {
+        final CardHolderEntity cardHolderEntity = cardHolderService.getCardHolderEntityById(cardHolderId);
+        return Optional.ofNullable(cardRepository.findByCardHolderIdAndCardId(cardHolderEntity, cardId))
+                .map(cardEntityToResponseMapper::from)
+                .orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND_MESSAGE));
     }
 }
