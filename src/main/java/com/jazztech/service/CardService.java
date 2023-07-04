@@ -33,6 +33,7 @@ public class CardService {
     private final CardEntityToResponseMapper cardEntityToResponseMapper;
     private final CardHolderRepository cardHolderRepository;
     private final CardHolderEntityToIdMapper cardHolderEntityToIdMapper;
+    private static final String CARD_NOT_FOUND_MESSAGE = "Card not found, check the card holder id and card id then try again";
 
     public CardResponse createCard(UUID cardHolderId, CardRequest cardRequest) {
         final CardHolderEntity cardHolder = cardHolderRepository.findById(cardHolderId).get();
