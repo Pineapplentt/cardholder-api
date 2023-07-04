@@ -101,12 +101,6 @@ public class CardService {
         return cardEntities.stream().map(cardEntityToResponseMapper::from).toList();
     }
 
-    public CardResponse getCardById(UUID cardHolderId, UUID cardId) {
-        final CardHolderEntity cardHolderEntity = cardHolderService.getCardHolderEntityById(cardHolderId);
-        return Optional.ofNullable(cardRepository.findByCardHolderIdAndCardId(cardHolderEntity, cardId))
-                .map(cardEntityToResponseMapper::from)
-                .orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND_MESSAGE));
-    }
 
     public LimitUpdateResponse updateCard(UUID cardHolderId, UUID cardId, LimitUpdateRequest limitUpdateRequest) {
         CardHolderEntity cardHolderEntity = cardHolderService.getCardHolderEntityById(cardHolderId);
