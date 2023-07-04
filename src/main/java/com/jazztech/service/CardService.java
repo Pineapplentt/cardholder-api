@@ -96,7 +96,7 @@ public class CardService {
     }
 
     public CardResponse getCardById(UUID cardHolderId, UUID cardId) {
-        final CardHolderEntity cardHolderEntity = cardHolderService.getCardHolderEntityById(cardHolderId);
+        final CardHolderEntity cardHolderEntity = cardHolderRepository.findById(cardHolderId).get();
         return Optional.ofNullable(cardRepository.findByCardHolderIdAndCardId(cardHolderEntity, cardId))
                 .map(cardEntityToResponseMapper::from)
                 .orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND_MESSAGE));
