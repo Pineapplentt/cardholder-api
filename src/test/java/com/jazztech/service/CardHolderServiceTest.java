@@ -81,8 +81,8 @@ class CardHolderServiceTest {
     //factory
     public static CardHolderRequest cardHolderRequestFactory() {
         return CardHolderRequest.builder()
-                .clientId("c0a8a4d0-8e1f-4b7a-9b1a-8e9a9a9a9a9a")
-                .creditAnalysisId("c0a8a4d0-8e1f-4b7a-9b1a-8e9a9a9a9a8a")
+                .clientId(UUID.fromString("c0a8a4d0-8e1f-4b7a-9b1a-8e9a9a9a9a9a"))
+                .creditAnalysisId(UUID.fromString("c0a8a4d0-8e1f-4b7a-9b1a-8e9a9a9a9a8a"))
                 .bankAccount(bankAccountFactory())
                 .build();
     }
@@ -90,8 +90,8 @@ class CardHolderServiceTest {
     public static CardHolderEntity activeCardHolderEntityFactory() {
         return CardHolderEntity.builder()
                 .id(UUID.randomUUID())
-                .clientId(UUID.fromString(cardHolderRequestFactory().clientId()))
-                .creditAnalysisId(UUID.fromString(cardHolderRequestFactory().creditAnalysisId()))
+                .clientId(cardHolderRequestFactory().clientId())
+                .creditAnalysisId(cardHolderRequestFactory().creditAnalysisId())
                 .bankAccount(bankAccountFactory())
                 .status(CardHolderStatus.ACTIVE)
                 .limit(BigDecimal.valueOf(1000.0))
@@ -101,8 +101,8 @@ class CardHolderServiceTest {
     public static CardHolderEntity inactiveCardHolderEntityFactory() {
         return CardHolderEntity.builder()
                 .id(UUID.randomUUID())
-                .clientId(UUID.fromString(cardHolderRequestFactory().clientId()))
-                .creditAnalysisId(UUID.fromString(cardHolderRequestFactory().creditAnalysisId()))
+                .clientId(cardHolderRequestFactory().clientId())
+                .creditAnalysisId(cardHolderRequestFactory().creditAnalysisId())
                 .bankAccount(bankAccountFactory())
                 .status(CardHolderStatus.INACTIVE)
                 .limit(BigDecimal.valueOf(1000.0))
@@ -141,7 +141,7 @@ class CardHolderServiceTest {
     @Test
     void should_create_card_holder() {
         when(cardHolderRepository.save(cardHolderEntityArgumentCaptor.capture())).thenReturn(activeCardHolderEntityFactory());
-        when(creditAnalysisApi.getAllAnalysis(uuidArgumentCaptor.capture())).thenReturn(analysisSearchFactory());
+        when(creditAnalysisApi.getAnalysisById(uuidArgumentCaptor.capture())).thenReturn(analysisSearchFactory());
 
         final CardHolderRequest cardHolderRequest = cardHolderRequestFactory();
         final CardHolderResponse cardHolderResponse = cardHolderService.createCardHolder(cardHolderRequest);
@@ -149,13 +149,13 @@ class CardHolderServiceTest {
         cardHolderService.createCardHolder(cardHolderRequest);
 
         assertNotNull(cardHolderResponse);
-        final String cardHolderId = cardHolderEntityArgumentCaptor.getValue().getClientId().toString();
+        final UUID cardHolderId = cardHolderEntityArgumentCaptor.getValue().getClientId();
         assertEquals(cardHolderRequest.clientId(), cardHolderId);
     }
 
     @Test
     void should_throw_card_holder_already_exists_exception_when_card_holder_already_exists() {
-        when(cardHolderRepository.findAll()).thenReturn(activeCardHolderEntityListFactory());
+        when(cardHolderRepository.findById(uuidArgumentCaptor.capture())).thenReturn(Optional.of(activeCardHolderEntityFactory()));
 
         assertThrows(CardHolderAlreadyExistsException.class, () -> cardHolderService.createCardHolder(cardHolderRequestFactory()));
     }
@@ -196,7 +196,7 @@ class CardHolderServiceTest {
     void should_return_all_card_holders_wich_status_is_active() {
         when(cardHolderRepository.findByStatus(CardHolderStatus.ACTIVE)).thenReturn(activeCardHolderEntityListFactory());
 
-        List<CardHolderResponse> list = cardHolderService.getAllCardHolders(CardHolderStatus.ACTIVE.toString());
+        List<CardHolderResponse> list = cardHolderService.getAllCardHolders(CardHolderStatus.ACTIVE);
         assertNotNull(list);
         assertThat(list, is(not(empty())));
         assertInstanceOf(List.class, list);
@@ -208,7 +208,7 @@ class CardHolderServiceTest {
     void should_return_all_card_holders_wich_status_is_inactive() {
         when(cardHolderRepository.findByStatus(CardHolderStatus.INACTIVE)).thenReturn(inactiveCardHolderEntityListFactory());
 
-        List<CardHolderResponse> list = cardHolderService.getAllCardHolders(CardHolderStatus.INACTIVE.toString());
+        List<CardHolderResponse> list = cardHolderService.getAllCardHolders(CardHolderStatus.INACTIVE);
         assertNotNull(list);
         assertThat(list, is(not(empty())));
         assertInstanceOf(List.class, list);
@@ -218,7 +218,8 @@ class CardHolderServiceTest {
 
     @Test
     void should_throw_invalid_status_exception_when_guiven_status_is_different_than_active_or_inactive() {
-        assertThrows(InvalidStatusException.class, () -> cardHolderService.getAllCardHolders("other_than_active_or_inactive"));
+        assertThrows(IllegalArgumentException.class, () -> cardHolderService.getAllCardHolders(
+                CardHolderStatus.valueOf("other_than_active_or_inactive")));
     }
 
     @Test
