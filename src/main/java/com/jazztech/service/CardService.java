@@ -16,6 +16,7 @@ import com.jazztech.repository.entity.CardHolderEntity;
 import com.jazztech.utils.CardHolderStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -89,7 +90,7 @@ public class CardService {
     }
 
     public List<CardResponse> getAllCards(UUID cardHolderId) {
-        final CardHolderEntity cardHolderEntity = cardHolderService.getCardHolderEntityById(cardHolderId);
+        final CardHolderEntity cardHolderEntity = cardHolderRepository.findById(cardHolderId).get();
         final List<CardEntity> cardEntities = cardRepository.findByCardHolderId(cardHolderEntity);
         return cardEntities.stream().map(cardEntityToResponseMapper::from).toList();
     }
