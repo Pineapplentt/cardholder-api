@@ -32,10 +32,4 @@ public class CardController {
     public List<CardResponse> getAllCards(@PathVariable UUID cardHolderId) {
         return this.cardService.getAllCards(cardHolderId);
     }
-
-    @GetMapping("/{id}")
-    public CardResponse getCardById(@PathVariable UUID cardHolderId,
-                                    @PathVariable UUID id) {
-        return this.cardService.getCardById(cardHolderId, id);
-    }
 }
