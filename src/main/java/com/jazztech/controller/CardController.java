@@ -36,12 +36,6 @@ public class CardController {
         return this.cardService.getAllCards(cardHolderId);
     }
 
-    @GetMapping("/{id}")
-    public CardResponse getCardById(@PathVariable UUID cardHolderId,
-                                    @PathVariable UUID id) {
-        return this.cardService.getCardById(cardHolderId, id);
-    }
-
     @PatchMapping("/{cardId}")
     public LimitUpdateResponse updateCardLimit(@PathVariable UUID cardHolderId,
                                                @PathVariable UUID cardId,
