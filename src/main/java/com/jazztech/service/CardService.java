@@ -3,11 +3,10 @@ package com.jazztech.service;
 import com.jazztech.controller.request.card.CardRequest;
 import com.jazztech.controller.request.card.LimitUpdateRequest;
 import com.jazztech.controller.response.card.CardResponse;
-import com.jazztech.controller.response.card.LimitUpdateResponse;
 import com.jazztech.exception.CardNotFoundException;
+import com.jazztech.controller.response.card.LimitUpdateResponse;
 import com.jazztech.exception.InactiveCardHolderException;
 import com.jazztech.exception.InsufficientLimitException;
-import com.jazztech.mapper.card.CardEntityToLimitUpdateResponseMapper;
 import com.jazztech.mapper.card.CardEntityToResponseMapper;
 import com.jazztech.mapper.card.CardHolderEntityToIdMapper;
 import com.jazztech.mapper.card.CardModelToEntityMapper;
@@ -29,19 +28,18 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CardService {
-    static final String CARD_NUMBER_VISA_PREFIX = "4";
-    static final Integer CARD_NUMBER_LENGTH = 15;
+    private static final String CARD_NUMBER_VISA_PREFIX = "4";
+    private static final Integer CARD_NUMBER_LENGTH = 15;
     private final CardRepository cardRepository;
     private final CardHolderService cardHolderService;
     private final CardModelToEntityMapper cardModelToEntityMapper;
     private final CardEntityToResponseMapper cardEntityToResponseMapper;
     private final CardHolderRepository cardHolderRepository;
     private final CardHolderEntityToIdMapper cardHolderEntityToIdMapper;
-    private final CardEntityToLimitUpdateResponseMapper cardEntityToLimitUpdateResponseMapper;
-    static final String CARD_NOT_FOUND_MESSAGE = "Card not found, check the card holder id and card id then try again";
+    private static final String CARD_NOT_FOUND_MESSAGE = "Card not found, check the card holder id and card id then try again";
 
     public CardResponse createCard(UUID cardHolderId, CardRequest cardRequest) {
-        final CardHolderEntity cardHolder = cardHolderService.getCardHolderEntityById(cardHolderId);
+        final CardHolderEntity cardHolder = cardHolderRepository.findById(cardHolderId).get();
         final CardEntity cardEntity = cardModelToEntityMapper.from(cardBuilder(cardHolder, cardRequest));
 
         final CardEntity savedCardEntity = saveCardEntity(cardEntity.toBuilder().cardHolderId(cardHolder).build());
@@ -75,7 +73,7 @@ public class CardService {
         // Generate random digits for the due date
         final LocalDate dueDate = LocalDate.now().plusMonths(3).plusYears(5);
 
-        CardHolderEntity cardHolderEntity = cardHolderService.getCardHolderEntityById(cardHolder.getId());
+        CardHolderEntity cardHolderEntity = cardHolderRepository.findById(cardHolder.getId()).get();
         cardHolderEntity = cardHolderEntity.toBuilder()
                 .availableLimit(cardHolderEntity.getAvailableLimit().subtract(cardRequest.limit()))
                 .build();
@@ -96,9 +94,16 @@ public class CardService {
     }
 
     public List<CardResponse> getAllCards(UUID cardHolderId) {
-        final CardHolderEntity cardHolderEntity = cardHolderService.getCardHolderEntityById(cardHolderId);
+        final CardHolderEntity cardHolderEntity = cardHolderRepository.findById(cardHolderId).get();
         final List<CardEntity> cardEntities = cardRepository.findByCardHolderId(cardHolderEntity);
         return cardEntities.stream().map(cardEntityToResponseMapper::from).toList();
+    }
+
+    public CardResponse getCardById(UUID cardHolderId, UUID cardId) {
+        final CardHolderEntity cardHolderEntity = cardHolderRepository.findById(cardHolderId).get();
+        return Optional.ofNullable(cardRepository.findByCardHolderIdAndCardId(cardHolderEntity, cardId))
+                .map(cardEntityToResponseMapper::from)
+                .orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND_MESSAGE));
     }
 
 
