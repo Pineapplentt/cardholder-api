@@ -3,10 +3,11 @@ package com.jazztech.service;
 import com.jazztech.controller.request.card.CardRequest;
 import com.jazztech.controller.request.card.LimitUpdateRequest;
 import com.jazztech.controller.response.card.CardResponse;
-import com.jazztech.exception.CardNotFoundException;
 import com.jazztech.controller.response.card.LimitUpdateResponse;
+import com.jazztech.exception.CardNotFoundException;
 import com.jazztech.exception.InactiveCardHolderException;
 import com.jazztech.exception.InsufficientLimitException;
+import com.jazztech.mapper.card.CardEntityToLimitUpdateResponseMapper;
 import com.jazztech.mapper.card.CardEntityToResponseMapper;
 import com.jazztech.mapper.card.CardHolderEntityToIdMapper;
 import com.jazztech.mapper.card.CardModelToEntityMapper;
@@ -36,6 +37,7 @@ public class CardService {
     private final CardEntityToResponseMapper cardEntityToResponseMapper;
     private final CardHolderRepository cardHolderRepository;
     private final CardHolderEntityToIdMapper cardHolderEntityToIdMapper;
+    private final CardEntityToLimitUpdateResponseMapper cardEntityToLimitUpdateResponseMapper;
     private static final String CARD_NOT_FOUND_MESSAGE = "Card not found, check the card holder id and card id then try again";
 
     public CardResponse createCard(UUID cardHolderId, CardRequest cardRequest) {
@@ -108,7 +110,7 @@ public class CardService {
 
 
     public LimitUpdateResponse updateCard(UUID cardHolderId, UUID cardId, LimitUpdateRequest limitUpdateRequest) {
-        CardHolderEntity cardHolderEntity = cardHolderService.getCardHolderEntityById(cardHolderId);
+        CardHolderEntity cardHolderEntity = cardHolderRepository.findById(cardHolderId).get();
         final CardEntity cardEntity = cardRepository.findByCardHolderIdAndCardId(cardHolderEntity, cardId);
 
         final BigDecimal limitDifference = cardHolderEntity.getAvailableLimit().subtract(limitUpdateRequest.limit());
