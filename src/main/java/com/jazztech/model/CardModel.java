@@ -16,4 +16,8 @@ public record CardModel(
     @Builder(toBuilder = true)
     public CardModel {
     }
+
+    public CardModel updateCardLimit(BigDecimal newLimit) {
+        return this.toBuilder().limit(newLimit).build();
+    }
 }

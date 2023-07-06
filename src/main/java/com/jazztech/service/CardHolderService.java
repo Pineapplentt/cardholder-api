@@ -41,7 +41,7 @@ public class CardHolderService {
 
     public CardHolderModel cardHolderBuilder(CardHolderRequest cardHolderRequest) {
 
-        if (cardHolderRepository.findById(cardHolderRequest.clientId()).isPresent()) {
+        if (cardHolderRepository.findByClientId(cardHolderRequest.clientId()) != null) {
             throw new CardHolderAlreadyExistsException("Card Holder already registered, check the data sent for registration and try again");
 
         }

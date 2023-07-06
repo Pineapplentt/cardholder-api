@@ -155,7 +155,7 @@ class CardHolderServiceTest {
 
     @Test
     void should_throw_card_holder_already_exists_exception_when_card_holder_already_exists() {
-        when(cardHolderRepository.findById(uuidArgumentCaptor.capture())).thenReturn(Optional.of(activeCardHolderEntityFactory()));
+        when(cardHolderRepository.findByClientId(uuidArgumentCaptor.capture())).thenReturn(activeCardHolderEntityFactory());
 
         assertThrows(CardHolderAlreadyExistsException.class, () -> cardHolderService.createCardHolder(cardHolderRequestFactory()));
     }

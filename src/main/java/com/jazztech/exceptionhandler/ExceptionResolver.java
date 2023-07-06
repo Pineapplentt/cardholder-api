@@ -4,9 +4,11 @@ import com.jazztech.exception.AnalysisApiConnectionException;
 import com.jazztech.exception.AnalysisNotFoundException;
 import com.jazztech.exception.CardHolderAlreadyExistsException;
 import com.jazztech.exception.CardHolderNotFoundException;
+import com.jazztech.exception.CardNotFoundException;
 import com.jazztech.exception.CustomIllegalArgumentException;
 import com.jazztech.exception.InactiveCardHolderException;
 import com.jazztech.exception.InsufficientLimitException;
+import com.jazztech.exception.InvalidLimitException;
 import com.jazztech.exception.InvalidStatusException;
 import com.jazztech.utils.CardHolderStatus;
 import jakarta.servlet.http.HttpServletRequest;
@@ -130,6 +132,29 @@ public class ExceptionResolver {
 
         problemDetail.setDetail(errorMessage);
         problemDetail.setInstance(URI.create(request.getRequestURL().toString()));
+        return problemDetail;
+    }
+
+    @ExceptionHandler(CardNotFoundException.class)
+    public ProblemDetail cardNotFoundExceptionHandler(CardNotFoundException exception, HttpServletRequest request) {
+        final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problemDetail.setType(URI.create("https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"));
+        problemDetail.setTitle("Card not found");
+        problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
+        problemDetail.setDetail(exception.getMessage());
+        problemDetail.setInstance(URI.create(request.getRequestURL().toString()));
+        return problemDetail;
+    }
+
+    @ExceptionHandler(InvalidLimitException.class)
+    public ProblemDetail invalidLimitExceptionHandler(InvalidLimitException exception, HttpServletRequest request) {
+        final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        problemDetail.setType(URI.create(UNPROCESSABLE_ENTITY));
+        problemDetail.setTitle("Invalid limit");
+        problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
+        problemDetail.setDetail(exception.getMessage());
+        problemDetail.setInstance(URI.create(request.getRequestURL().toString()));
+
         return problemDetail;
     }
 }

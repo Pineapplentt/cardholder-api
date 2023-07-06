@@ -4,13 +4,18 @@ import com.jazztech.controller.request.card.CardRequest;
 import com.jazztech.controller.request.card.LimitUpdateRequest;
 import com.jazztech.controller.response.card.CardResponse;
 import com.jazztech.controller.response.card.LimitUpdateResponse;
+import com.jazztech.exception.CardHolderNotFoundException;
 import com.jazztech.exception.CardNotFoundException;
 import com.jazztech.exception.InactiveCardHolderException;
 import com.jazztech.exception.InsufficientLimitException;
+import com.jazztech.exception.InvalidLimitException;
 import com.jazztech.mapper.card.CardEntityToLimitUpdateResponseMapper;
+import com.jazztech.mapper.card.CardEntityToModelMapper;
 import com.jazztech.mapper.card.CardEntityToResponseMapper;
 import com.jazztech.mapper.card.CardHolderEntityToIdMapper;
 import com.jazztech.mapper.card.CardModelToEntityMapper;
+import com.jazztech.mapper.cardholder.CardHolderEntityToModelMapper;
+import com.jazztech.mapper.cardholder.CardHolderModelToEntityMapper;
 import com.jazztech.model.CardModel;
 import com.jazztech.repository.CardHolderRepository;
 import com.jazztech.repository.CardRepository;
@@ -31,6 +36,8 @@ import org.springframework.stereotype.Service;
 public class CardService {
     private static final String CARD_NUMBER_VISA_PREFIX = "4";
     private static final Integer CARD_NUMBER_LENGTH = 15;
+    private static final String CARD_NOT_FOUND_MESSAGE = "Card not found, check the card id then try again";
+    private static final String CARD_HOLDER_NOT_FOUND_MESSAGE = "Card holder not found, check the card holder id and try again";
     private final CardRepository cardRepository;
     private final CardHolderService cardHolderService;
     private final CardModelToEntityMapper cardModelToEntityMapper;
@@ -38,10 +45,13 @@ public class CardService {
     private final CardHolderRepository cardHolderRepository;
     private final CardHolderEntityToIdMapper cardHolderEntityToIdMapper;
     private final CardEntityToLimitUpdateResponseMapper cardEntityToLimitUpdateResponseMapper;
-    private static final String CARD_NOT_FOUND_MESSAGE = "Card not found, check the card holder id and card id then try again";
+    private final CardHolderEntityToModelMapper cardHolderEntityToModelMapper;
+    private final CardHolderModelToEntityMapper cardHolderModelToEntityMapper;
+    private final CardEntityToModelMapper cardEntityToModelMapper;
 
     public CardResponse createCard(UUID cardHolderId, CardRequest cardRequest) {
-        final CardHolderEntity cardHolder = cardHolderRepository.findById(cardHolderId).get();
+        final CardHolderEntity cardHolder = cardHolderRepository.findById(cardHolderId)
+                .orElseThrow(() -> new CardHolderNotFoundException(CARD_HOLDER_NOT_FOUND_MESSAGE));
         final CardEntity cardEntity = cardModelToEntityMapper.from(cardBuilder(cardHolder, cardRequest));
 
         final CardEntity savedCardEntity = saveCardEntity(cardEntity.toBuilder().cardHolderId(cardHolder).build());
@@ -49,6 +59,11 @@ public class CardService {
     }
 
     public CardModel cardBuilder(CardHolderEntity cardHolder, CardRequest cardRequest) {
+
+        if (cardRequest.limit().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidLimitException("Limit request must be greater than zero");
+        }
+
         if (cardHolder.getAvailableLimit().compareTo(BigDecimal.ZERO) <= 0 || cardHolder.getAvailableLimit().compareTo(cardRequest.limit()) < 0) {
             throw new InsufficientLimitException(
                     "Card holder has insufficient limit, in order to create a credit card, the card holder must have a limit greater than zero"
@@ -75,11 +90,9 @@ public class CardService {
         // Generate random digits for the due date
         final LocalDate dueDate = LocalDate.now().plusMonths(3).plusYears(5);
 
-        CardHolderEntity cardHolderEntity = cardHolderRepository.findById(cardHolder.getId()).get();
-        cardHolderEntity = cardHolderEntity.toBuilder()
-                .availableLimit(cardHolderEntity.getAvailableLimit().subtract(cardRequest.limit()))
-                .build();
-        cardHolderRepository.save(cardHolderEntity);
+        final BigDecimal newAvailableLimit = cardHolder.getAvailableLimit().subtract(cardRequest.limit());
+
+        cardHolderRepository.updateCardHolderAvailableLimit(cardHolder.getId(), newAvailableLimit);
 
         return CardModel.builder()
                 .cardId(UUID.randomUUID())
@@ -96,25 +109,52 @@ public class CardService {
     }
 
     public List<CardResponse> getAllCards(UUID cardHolderId) {
-        final CardHolderEntity cardHolderEntity = cardHolderRepository.findById(cardHolderId).get();
+        final CardHolderEntity cardHolderEntity = cardHolderRepository.findById(cardHolderId)
+                .orElseThrow(() -> new CardHolderNotFoundException(CARD_HOLDER_NOT_FOUND_MESSAGE));
         final List<CardEntity> cardEntities = cardRepository.findByCardHolderId(cardHolderEntity);
         return cardEntities.stream().map(cardEntityToResponseMapper::from).toList();
     }
 
     public CardResponse getCardById(UUID cardHolderId, UUID cardId) {
-        final CardHolderEntity cardHolderEntity = cardHolderRepository.findById(cardHolderId).get();
-        return Optional.ofNullable(cardRepository.findByCardHolderIdAndCardId(cardHolderEntity, cardId))
-                .map(cardEntityToResponseMapper::from)
-                .orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND_MESSAGE));
+        final CardHolderEntity cardHolderEntity = cardHolderRepository.findById(cardHolderId)
+                .orElseThrow(() -> new CardHolderNotFoundException(CARD_HOLDER_NOT_FOUND_MESSAGE));
+        return cardEntityToResponseMapper.from(cardRepository.findByCardHolderIdAndCardId(cardHolderEntity, cardId)
+                .orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND_MESSAGE)));
     }
 
-
     public LimitUpdateResponse updateCard(UUID cardHolderId, UUID cardId, LimitUpdateRequest limitUpdateRequest) {
-        CardHolderEntity cardHolderEntity = cardHolderRepository.findById(cardHolderId).get();
-        final CardEntity cardEntity = cardRepository.findByCardHolderIdAndCardId(cardHolderEntity, cardId);
+
+        if (limitUpdateRequest.limit().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidLimitException("Limit update request must be greater than zero");
+        }
+
+        final CardHolderEntity cardHolderEntity = cardHolderRepository.findById(cardHolderId)
+                .orElseThrow(() -> new CardHolderNotFoundException(CARD_HOLDER_NOT_FOUND_MESSAGE));
+
+        final CardEntity cardEntity = cardRepository.findByCardHolderIdAndCardId(cardHolderEntity, cardId)
+                .orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND_MESSAGE));
+
+        if (limitUpdateRequest.limit().compareTo(cardEntity.getLimit()) == 0) {
+            throw new InvalidLimitException("Limit update request must be different than the current limit");
+        }
 
         final BigDecimal limitDifference = cardHolderEntity.getAvailableLimit().subtract(limitUpdateRequest.limit());
-        final BigDecimal cardLimitAfterCalculation = cardEntity.getLimit();
+        final BigDecimal cardLimitAfterCalculation = cardEntity.getLimit().subtract(limitUpdateRequest.limit());
+
+
+        // if limit update request is less than the current limit
+        if (limitUpdateRequest.limit().compareTo(cardEntity.getLimit()) < 0) {
+            final BigDecimal finalAddLimitValue = cardHolderEntity.getAvailableLimit().add(cardLimitAfterCalculation);
+
+            cardHolderRepository.updateCardHolderAvailableLimit(cardHolderId, finalAddLimitValue);
+            cardRepository.updateCardLimit(cardId, limitUpdateRequest.limit());
+
+            final CardEntity updatedCardEntity = cardRepository.findByCardHolderIdAndCardId(cardHolderEntity, cardId)
+                    .orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND_MESSAGE));
+
+            return Optional.of(cardEntityToLimitUpdateResponseMapper.from(updatedCardEntity))
+                    .orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND_MESSAGE));
+        }
 
         if (limitDifference.compareTo(BigDecimal.ZERO) < 0) {
             throw new InsufficientLimitException(
@@ -122,21 +162,17 @@ public class CardService {
                             + " and greater than the requested limit");
         }
 
-        if (limitUpdateRequest.limit().compareTo(cardEntity.getLimit()) < 0) {
-            cardHolderEntity = cardHolderEntity.toBuilder()
-                    .availableLimit(cardHolderEntity.getAvailableLimit().add(cardLimitAfterCalculation))
-                    .build();
-            cardHolderRepository.save(cardHolderEntity);
-            return Optional.of(cardRepository.save(cardEntity.toBuilder().limit(limitUpdateRequest.limit()).build()))
-                    .map(cardEntityToLimitUpdateResponseMapper::from).orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND_MESSAGE));
-        }
+        // if limit update request is greater than the current limit
+        final BigDecimal calculation = limitUpdateRequest.limit().subtract(cardEntity.getLimit());
+        final BigDecimal finalSubtractLimitValue = cardHolderEntity.getAvailableLimit().subtract(calculation);
 
-        cardHolderEntity = cardHolderEntity.toBuilder()
-                .availableLimit(cardHolderEntity.getAvailableLimit().subtract(limitUpdateRequest.limit()))
-                .build();
-        cardHolderRepository.save(cardHolderEntity);
+        cardHolderRepository.updateCardHolderAvailableLimit(cardHolderId, finalSubtractLimitValue);
+        cardRepository.updateCardLimit(cardId, limitUpdateRequest.limit());
 
-        return Optional.of(cardRepository.save(cardEntity.toBuilder().limit(limitUpdateRequest.limit()).build()))
-                .map(cardEntityToLimitUpdateResponseMapper::from).orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND_MESSAGE));
+        final CardEntity updatedCardEntity = cardRepository.findByCardHolderIdAndCardId(cardHolderEntity, cardId)
+                .orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND_MESSAGE));
+
+        return Optional.of(cardEntityToLimitUpdateResponseMapper.from(updatedCardEntity))
+                .orElseThrow(() -> new CardNotFoundException(CARD_NOT_FOUND_MESSAGE));
     }
 }
